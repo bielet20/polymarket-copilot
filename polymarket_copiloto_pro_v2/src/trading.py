@@ -15,6 +15,9 @@ _creds = None
 def get_client():
     global _client, _creds
 
+    print(f"DEBUG: PRIVATE_KEY length = {len(PRIVATE_KEY)}")
+    print(f"DEBUG: PRIVATE_KEY starts with = {PRIVATE_KEY[:10] if PRIVATE_KEY else 'EMPTY'}")
+
     if PRIVATE_KEY and not _client:
         try:
             from py_clob_client_v2 import ApiCreds, ClobClient, OrderArgs
