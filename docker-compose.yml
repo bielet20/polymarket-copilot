@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  polymarket-copilot:
+    build: .
+    container_name: polymarket-copilot
+    volumes:
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml:ro
+    env_file:
+      - .env
+    restart: unless-stopped

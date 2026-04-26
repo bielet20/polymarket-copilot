@@ -1,0 +1,35 @@
+bankroll_usdc: 1000
+
+risk:
+  max_stake_pct: 0.03
+  daily_loss_limit_pct: 0.05
+  max_open_positions_pct: 0.20
+  min_edge: 0.08
+
+filters:
+  min_liquidity: 1000
+  min_volume_24h: 500
+  min_price: 0.08
+  max_price: 0.92
+  avoid_categories:
+    - basketball
+    - sports_other
+  cautious_categories:
+    - tennis
+  preferred_categories:
+    - politics
+    - economics
+    - crypto
+    - other
+
+scoring:
+  liquidity_weight: 0.20
+  volume_weight: 0.20
+  edge_weight: 0.45
+  category_weight: 0.15
+  movement_weight: 0.10
+
+execution:
+  allow_live_trading: false
+  require_manual_confirmation: true
+  dry_run: true
