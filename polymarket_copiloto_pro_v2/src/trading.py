@@ -17,14 +17,14 @@ def get_client():
 
     if PRIVATE_KEY and not _client:
         try:
-            from py_clob_client.client import ClobClient
-            from py_clob_client.clob_types import ApiCreds, OrderArgs
+            from py_clob_client_v2 import ApiCreds, ClobClient, OrderArgs
+            from py_clob_client_v2.order_builder.constants import BUY
         except ImportError:
-            raise RuntimeError("Instala py-clob-client: pip install py-clob-client")
+            raise RuntimeError("Instala py-clob-client: pip install py-clob-client-v2")
 
         _client = ClobClient(
             host=HOST,
-            chain=CHAIN_ID,
+            chain_id=CHAIN_ID,
             key=PRIVATE_KEY,
             funder=FUNDER_ADDRESS,
         )
@@ -41,7 +41,7 @@ def get_client():
             )
         else:
             print("Generando API credentials automáticamente...")
-            _creds = _client.create_or_derive_api_creds()
+            _creds = _client.create_or_derive_api_key()
             print(f"apiKey: {_creds['apiKey']}")
             print(f"secret: {_creds['secret']}")
             print(f"passphrase: {_creds['passphrase']}")
@@ -68,6 +68,9 @@ def get_token_id(market_slug: str):
 
 
 def place_buy_order(token_id: str, price: float, size: float, confirm: bool = False):
+    from py_clob_client_v2 import OrderArgs
+    from py_clob_client_v2.order_builder.constants import BUY
+
     if not confirm:
         return {
             "status": "preview",
@@ -79,10 +82,14 @@ def place_buy_order(token_id: str, price: float, size: float, confirm: bool = Fa
         }
 
     client = get_client()
-    from py_clob_client.order_builder.constants import BUY
 
     order = client.create_and_post_order(
-        OrderArgs(token_id=token_id, price=price, size=size, side=BUY),
+        order_args=OrderArgs(
+            token_id=token_id,
+            price=price,
+            size=size,
+            side=BUY,
+        ),
         options={"tick_size": "0.01", "neg_risk": False}
     )
     return {"status": "submitted", "order": order}

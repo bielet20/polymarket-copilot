@@ -3,4 +3,4 @@ requests>=2.31.0
 python-dotenv>=1.0.1
 PyYAML>=6.0.1
 rich>=13.7.0
-py-clob-client>=0.21.0
+py-clob-client-v2>=1.0.0
