@@ -17,8 +17,8 @@ def get_client():
 
     if PRIVATE_KEY and not _client:
         try:
-from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import ApiCreds, OrderArgs
+            from py_clob_client.client import ClobClient
+            from py_clob_client.clob_types import ApiCreds, OrderArgs
         except ImportError:
             raise RuntimeError("Instala py-clob-client: pip install py-clob-client")
 
