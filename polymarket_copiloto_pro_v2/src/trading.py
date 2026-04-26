@@ -30,6 +30,7 @@ def get_client():
             chain_id=CHAIN_ID,
             key=PRIVATE_KEY,
             funder=FUNDER_ADDRESS,
+            signature_type=0,
         )
 
         API_KEY = os.getenv("POLYMARKET_API_KEY", "")
@@ -37,6 +38,7 @@ def get_client():
         API_PASSPHRASE = os.getenv("POLYMARKET_API_PASSPHRASE", "")
 
         if API_KEY and API_SECRET and API_PASSPHRASE:
+            print("Usando credenciales API del .env")
             _creds = ApiCreds(
                 api_key=API_KEY,
                 api_secret=API_SECRET,
@@ -44,11 +46,18 @@ def get_client():
             )
         else:
             print("Generando API credentials automáticamente...")
-            _creds = _client.create_or_derive_api_key()
-            print(f"apiKey: {_creds['apiKey']}")
-            print(f"secret: {_creds['secret']}")
-            print(f"passphrase: {_creds['passphrase']}")
-            print("\nAñade estas credenciales a tu .env para no generarlas cada vez")
+            try:
+                _creds = _client.create_or_derive_api_key()
+                print(f"apiKey: {_creds['apiKey']}")
+                print(f"secret: {_creds['secret']}")
+                print(f"passphrase: {_creds['passphrase']}")
+                print("\nAñade estas credenciales a tu .env para no generarlas cada vez")
+            except Exception as e:
+                print(f"Error generando credenciales: {e}")
+                print("\nWorkaround: Obtén tus credenciales manualmente:")
+                print("1. Ve a https://clob.polymarket.com/auth/api-key")
+                print("2. Usa Postman o curl con tu wallet para firmar la petición")
+                print("3. O copia las credenciales existentes en el .env")
 
     if _client is None:
         raise RuntimeError(
