@@ -5,10 +5,10 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY polymarket_copiloto_pro_v2/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY polymarket_copiloto_pro_v2/ .
 
 ENV PYTHONUNBUFFERED=1
 
