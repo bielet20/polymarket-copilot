@@ -2,15 +2,11 @@
 
 Copiloto de analisis para Polymarket en modo seguro. Escanea mercados, calcula edge conservador, detecta movimiento local de precio, prioriza mercados informativos y registra senales.
 
-## Cambios v2
+## Cambios v3
 
-- Corrige bug de `movement` usado fuera de contexto.
-- Corrige bug de `m` usado antes del loop.
-- Anade `movement` y `movement_pct` a las senales.
-- Guarda `data/price_history.csv` para detectar caidas/subidas tras varios scans.
-- Penaliza deportes sin modelo dedicado.
-- Prioriza politica, macro/economia y crypto.
-- Mantiene trading real desactivado.
+- Anade integracion con `py-clob-client` para trading real.
+- Nuevo comando `trade` para ejecutar ordenes BUY desde senales.
+- Nuevo comando `balance` para ver balance USDC.
 
 ## Instalacion
 
@@ -21,18 +17,38 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
+## Configurar trading
+
+Edita `.env` y anade tus credenciales de Polymarket:
+
+```env
+POLYMARKET_PRIVATE_KEY=tu_clave_privada_wallet
+POLYMARKET_API_KEY=tu_api_key
+POLYMARKET_API_SECRET=tu_api_secret
+POLYMARKET_API_PASSPHRASE=tu_api_passphrase
+POLYMARKET_FUNDER_ADDRESS=tu_direccion_usdc
+```
+
 ## Ejecutar
 
 ```bash
 python main.py scan
+python main.py report
+python main.py balance
 ```
 
-Despues de varios scans, el detector de movimiento empieza a aportar valor porque necesita historico local.
+## Trading real
 
-## Ver reporte
+Despues de un scan, puedes ejecutar una orden:
 
 ```bash
-python main.py report
+python main.py trade --market "will-trump-win-2024" --price 0.55 --size 5
+```
+
+Para ejecutar realmente (sin --confirm es solo preview):
+
+```bash
+python main.py trade --market "will-trump-win-2024" --price 0.55 --size 5 --confirm
 ```
 
 ## Interpretacion
@@ -53,4 +69,4 @@ python main.py report
 
 - No incluyas tu `.env` en repositorios.
 - No compartas claves privadas.
-- Este proyecto no ejecuta ordenes reales.
+- Usa --confirm solo cuando quieras ejecutar realmente.
