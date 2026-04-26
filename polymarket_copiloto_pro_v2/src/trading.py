@@ -1,57 +1,62 @@
 import os
-import time
 from dotenv import load_dotenv
-from typing import Optional
 
 load_dotenv()
 
 HOST = os.getenv("POLYMARKET_HOST", "https://clob.polymarket.com")
-CHAIN_ID = int(os.getenv("POLYMARKET_CHAIN_ID", "1"))
+CHAIN_ID = int(os.getenv("POLYMARKET_CHAIN_ID", "137"))
 PRIVATE_KEY = os.getenv("POLYMARKET_PRIVATE_KEY", "")
-API_KEY = os.getenv("POLYMARKET_API_KEY", "")
-API_SECRET = os.getenv("POLYMARKET_API_SECRET", "")
-API_PASSPHRASE = os.getenv("POLYMARKET_API_PASSPHRASE", "")
 FUNDER_ADDRESS = os.getenv("POLYMARKET_FUNDER_ADDRESS", "")
 
 _client = None
+_creds = None
 
 
 def get_client():
-    global _client
-    if _client is not None:
-        return _client
+    global _client, _creds
 
-    if not PRIVATE_KEY:
+    if PRIVATE_KEY and not _client:
+        try:
+from py_clob_client.client import ClobClient
+from py_clob_client.clob_types import ApiCreds, OrderArgs
+        except ImportError:
+            raise RuntimeError("Instala py-clob-client: pip install py-clob-client")
+
+        _client = ClobClient(
+            host=HOST,
+            chain=CHAIN_ID,
+            key=PRIVATE_KEY,
+            funder=FUNDER_ADDRESS,
+        )
+
+        API_KEY = os.getenv("POLYMARKET_API_KEY", "")
+        API_SECRET = os.getenv("POLYMARKET_API_SECRET", "")
+        API_PASSPHRASE = os.getenv("POLYMARKET_API_PASSPHRASE", "")
+
+        if API_KEY and API_SECRET and API_PASSPHRASE:
+            _creds = ApiCreds(
+                api_key=API_KEY,
+                api_secret=API_SECRET,
+                api_passphrase=API_PASSPHRASE,
+            )
+        else:
+            print("Generando API credentials automáticamente...")
+            _creds = _client.create_or_derive_api_creds()
+            print(f"apiKey: {_creds['apiKey']}")
+            print(f"secret: {_creds['secret']}")
+            print(f"passphrase: {_creds['passphrase']}")
+            print("\nAñade estas credenciales a tu .env para no generarlas cada vez")
+
+    if _client is None:
         raise RuntimeError(
             "POLYMARKET_PRIVATE_KEY no configurada. "
             "Edita .env y añade tu clave privada."
         )
 
-    try:
-        from py_clob_client.client import ClobClient
-        from py_clob_client.clob_types import ApiCreds
-    except ImportError:
-        raise RuntimeError(
-            "Instala py-clob-client: pip install py-clob-client"
-        )
-
-    creds = ApiCreds(
-        api_key=API_KEY,
-        api_secret=API_SECRET,
-        api_passphrase=API_PASSPHRASE,
-    ) if API_KEY else None
-
-    _client = ClobClient(
-        host=HOST,
-        chain=CHAIN_ID,
-        key=PRIVATE_KEY,
-        creds=creds,
-        funder=FUNDER_ADDRESS,
-    )
     return _client
 
 
-def get_token_id(market_slug: str) -> Optional[str]:
+def get_token_id(market_slug: str):
     client = get_client()
     try:
         markets = client.get_markets(market_slug=market_slug)
@@ -62,12 +67,7 @@ def get_token_id(market_slug: str) -> Optional[str]:
     return None
 
 
-def place_buy_order(
-    token_id: str,
-    price: float,
-    size: float,
-    confirm: bool = False
-) -> dict:
+def place_buy_order(token_id: str, price: float, size: float, confirm: bool = False):
     if not confirm:
         return {
             "status": "preview",
@@ -75,7 +75,7 @@ def place_buy_order(
             "price": price,
             "size": size,
             "cost": price * size,
-            "message": "Usa confirm=True para ejecutar"
+            "message": "Usa --confirm para ejecutar"
         }
 
     client = get_client()
@@ -88,7 +88,7 @@ def place_buy_order(
     return {"status": "submitted", "order": order}
 
 
-def get_balance() -> float:
+def get_balance():
     client = get_client()
     try:
         balance = client.get_balance()
@@ -97,7 +97,7 @@ def get_balance() -> float:
         return 0.0
 
 
-def get_orders() -> list:
+def get_orders():
     client = get_client()
     try:
         return client.get_orders()
